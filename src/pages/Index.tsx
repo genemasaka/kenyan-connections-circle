@@ -1,9 +1,9 @@
-
 import React from "react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/contexts/AuthContext";
 import Layout from "@/components/Layout";
+import { User, Users, MessageSquare } from "lucide-react";
 
 const Index = () => {
   const { isAuthenticated } = useAuth();

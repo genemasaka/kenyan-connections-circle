@@ -23,8 +23,8 @@ const Profile = () => {
   const [profession, setProfession] = useState(user?.profession || "");
   const [interests, setInterests] = useState(user?.interests.join(", ") || "");
   const [lookingFor, setLookingFor] = useState(user?.lookingFor || "");
-  const [showPhoto, setShowPhoto] = useState(user?.profilePrivacy.showPhoto || true);
-  const [showProfession, setShowProfession] = useState(user?.profilePrivacy.showProfession || true);
+  const [showPhoto, setShowPhoto] = useState(user?.profilePrivacy.showPhoto || false);
+  const [showProfession, setShowProfession] = useState(user?.profilePrivacy.showProfession || false);
   
   React.useEffect(() => {
     if (!user) {

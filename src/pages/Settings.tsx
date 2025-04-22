@@ -1,4 +1,3 @@
-
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
@@ -28,8 +27,8 @@ const Settings = () => {
   const { blockedUsers, unblockUser } = useBlock();
   const navigate = useNavigate();
   
-  const [showPhoto, setShowPhoto] = useState(user?.profilePrivacy.showPhoto || true);
-  const [showProfession, setShowProfession] = useState(user?.profilePrivacy.showProfession || true);
+  const [showPhoto, setShowPhoto] = useState(user?.profilePrivacy.showPhoto || false);
+  const [showProfession, setShowProfession] = useState(user?.profilePrivacy.showProfession || false);
   const [settingsUpdated, setSettingsUpdated] = useState(false);
   const [userToUnblock, setUserToUnblock] = useState<string | null>(null);
 
@@ -109,10 +108,7 @@ const Settings = () => {
                   <Switch
                     id="showPhoto"
                     checked={showPhoto}
-                    onCheckedChange={(checked) => {
-                      setShowPhoto(checked);
-                      setSettingsUpdated(false);
-                    }}
+                    onCheckedChange={setShowPhoto}
                   />
                 </div>
                 <Separator />
@@ -126,10 +122,7 @@ const Settings = () => {
                   <Switch
                     id="showProfession"
                     checked={showProfession}
-                    onCheckedChange={(checked) => {
-                      setShowProfession(checked);
-                      setSettingsUpdated(false);
-                    }}
+                    onCheckedChange={setShowProfession}
                   />
                 </div>
               </CardContent>
