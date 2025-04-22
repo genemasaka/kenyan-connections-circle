@@ -1,5 +1,4 @@
-
-import { supabase } from "./supabase";
+import { supabase } from "@/integrations/supabase/client";
 import { Message } from "./types";
 
 export interface MessageResponse {
