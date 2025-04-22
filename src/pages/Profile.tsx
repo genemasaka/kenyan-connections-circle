@@ -1,5 +1,5 @@
 
-import React, { useState } from "react";
+import React, { useState, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import Layout from "@/components/Layout";
@@ -11,7 +11,9 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { Separator } from "@/components/ui/separator";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Switch } from "@/components/ui/switch";
-import { Edit, User } from "lucide-react";
+import { Edit, User, Upload, Trash2 } from "lucide-react";
+import { uploadProfilePhoto, deleteProfilePhoto } from "@/lib/fileUpload";
+import { toast } from "@/components/ui/use-toast";
 
 const Profile = () => {
   const { user, updateUser, isLoading } = useAuth();
@@ -23,8 +25,12 @@ const Profile = () => {
   const [profession, setProfession] = useState(user?.profession || "");
   const [interests, setInterests] = useState(user?.interests.join(", ") || "");
   const [lookingFor, setLookingFor] = useState(user?.lookingFor || "");
+  const [profilePhoto, setProfilePhoto] = useState(user?.profilePhoto || "");
   const [showPhoto, setShowPhoto] = useState(user?.profilePrivacy.showPhoto || false);
   const [showProfession, setShowProfession] = useState(user?.profilePrivacy.showProfession || false);
+  const [isUploading, setIsUploading] = useState(false);
+  
+  const fileInputRef = useRef<HTMLInputElement>(null);
   
   React.useEffect(() => {
     if (!user) {
@@ -36,6 +42,7 @@ const Profile = () => {
       setProfession(user.profession);
       setInterests(user.interests.join(", "));
       setLookingFor(user.lookingFor);
+      setProfilePhoto(user.profilePhoto || "");
       setShowPhoto(user.profilePrivacy.showPhoto);
       setShowProfession(user.profilePrivacy.showProfession);
     }
@@ -53,6 +60,7 @@ const Profile = () => {
       setProfession(user.profession);
       setInterests(user.interests.join(", "));
       setLookingFor(user.lookingFor);
+      setProfilePhoto(user.profilePhoto || "");
       setShowPhoto(user.profilePrivacy.showPhoto);
       setShowProfession(user.profilePrivacy.showProfession);
     }
@@ -73,6 +81,7 @@ const Profile = () => {
       profession,
       interests: interestArray,
       lookingFor,
+      profilePhoto,
       profilePrivacy: {
         showPhoto,
         showProfession,
@@ -81,6 +90,70 @@ const Profile = () => {
     
     if (success) {
       setIsEditing(false);
+    }
+  };
+
+  const handlePhotoUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (!e.target.files || !e.target.files[0] || !user) return;
+    
+    const file = e.target.files[0];
+    
+    // Validate file size (max 5MB)
+    if (file.size > 5 * 1024 * 1024) {
+      toast({
+        title: "File too large",
+        description: "Image must be less than 5MB",
+        variant: "destructive",
+      });
+      return;
+    }
+    
+    // Validate file type
+    if (!file.type.startsWith('image/')) {
+      toast({
+        title: "Invalid file type",
+        description: "Please upload an image file",
+        variant: "destructive",
+      });
+      return;
+    }
+    
+    setIsUploading(true);
+    try {
+      const photoUrl = await uploadProfilePhoto(file, user.id);
+      setProfilePhoto(photoUrl);
+    } catch (error) {
+      console.error("Failed to upload photo:", error);
+      toast({
+        title: "Upload failed",
+        description: "Failed to upload profile photo",
+        variant: "destructive",
+      });
+    } finally {
+      setIsUploading(false);
+      // Reset file input
+      if (fileInputRef.current) {
+        fileInputRef.current.value = '';
+      }
+    }
+  };
+
+  const handleRemovePhoto = async () => {
+    if (!profilePhoto || !user) return;
+    
+    try {
+      // Only try to delete from storage if it's a Supabase URL
+      if (profilePhoto.includes('supabase')) {
+        await deleteProfilePhoto(profilePhoto);
+      }
+      setProfilePhoto("");
+    } catch (error) {
+      console.error("Failed to delete photo:", error);
+      toast({
+        title: "Error",
+        description: "Failed to remove profile photo",
+        variant: "destructive",
+      });
     }
   };
 
@@ -105,15 +178,50 @@ const Profile = () => {
           <Card>
             <CardHeader>
               <div className="flex flex-col md:flex-row md:items-center gap-6">
-                <Avatar className="w-24 h-24 border-2 border-primary/10">
-                  {user.profilePhoto ? (
-                    <AvatarImage src={user.profilePhoto} alt={user.name} />
-                  ) : (
-                    <AvatarFallback className="text-xl bg-primary text-primary-foreground">
-                      {user.name.split(" ").map(n => n[0]).join("")}
-                    </AvatarFallback>
+                <div className="relative group">
+                  <Avatar className="w-24 h-24 border-2 border-primary/10">
+                    {profilePhoto ? (
+                      <AvatarImage src={profilePhoto} alt={user.name} />
+                    ) : (
+                      <AvatarFallback className="text-xl bg-primary text-primary-foreground">
+                        {user.name.split(" ").map(n => n[0]).join("")}
+                      </AvatarFallback>
+                    )}
+                  </Avatar>
+                  {isEditing && (
+                    <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+                      <div className="bg-black/60 rounded-full w-full h-full flex flex-col items-center justify-center">
+                        <input
+                          type="file"
+                          ref={fileInputRef}
+                          onChange={handlePhotoUpload}
+                          accept="image/*"
+                          className="hidden"
+                        />
+                        <Button 
+                          variant="ghost" 
+                          size="sm" 
+                          className="text-white p-1"
+                          onClick={() => fileInputRef.current?.click()}
+                          disabled={isUploading}
+                        >
+                          <Upload className="h-4 w-4" />
+                        </Button>
+                        {profilePhoto && (
+                          <Button 
+                            variant="ghost" 
+                            size="sm" 
+                            className="text-white p-1"
+                            onClick={handleRemovePhoto}
+                            disabled={isUploading}
+                          >
+                            <Trash2 className="h-4 w-4" />
+                          </Button>
+                        )}
+                      </div>
+                    </div>
                   )}
-                </Avatar>
+                </div>
                 <div>
                   <CardTitle className="text-2xl">{user.name}</CardTitle>
                   <CardDescription>
@@ -253,13 +361,13 @@ const Profile = () => {
                 <Button
                   variant="outline"
                   onClick={handleCancel}
-                  disabled={isLoading}
+                  disabled={isLoading || isUploading}
                 >
                   Cancel
                 </Button>
                 <Button
                   onClick={handleSubmit}
-                  disabled={isLoading}
+                  disabled={isLoading || isUploading}
                 >
                   {isLoading ? "Saving..." : "Save Changes"}
                 </Button>
