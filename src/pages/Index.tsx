@@ -1,13 +1,19 @@
+
 import React from "react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/contexts/AuthContext";
 import Layout from "@/components/Layout";
-import { User, Users, MessageSquare } from "lucide-react";
+import { User, Users, MessageSquare, Beaker } from "lucide-react";
 
 const Index = () => {
-  const { isAuthenticated } = useAuth();
+  const { isAuthenticated, bypassAuth } = useAuth();
   const navigate = useNavigate();
+
+  const handleTestMode = () => {
+    bypassAuth();
+    navigate("/matches");
+  };
 
   return (
     <Layout>
@@ -35,6 +41,10 @@ const Index = () => {
                       </Button>
                       <Button size="lg" variant="outline" onClick={() => navigate("/login")} className="bg-transparent hover:bg-primary-foreground/10 text-primary-foreground border-primary-foreground">
                         Sign In
+                      </Button>
+                      <Button size="lg" variant="ghost" onClick={handleTestMode} className="bg-transparent text-primary-foreground hover:bg-primary-foreground/10">
+                        <Beaker className="mr-2 h-4 w-4" />
+                        Test Mode
                       </Button>
                     </>
                   )}

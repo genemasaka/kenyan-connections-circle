@@ -7,10 +7,10 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
-import { Eye, EyeOff, LogIn } from "lucide-react";
+import { Eye, EyeOff, LogIn, Beaker } from "lucide-react";
 
 const Login = () => {
-  const { login, isLoading } = useAuth();
+  const { login, isLoading, bypassAuth } = useAuth();
   const navigate = useNavigate();
   
   const [email, setEmail] = useState("");
@@ -31,6 +31,11 @@ const Login = () => {
     if (success) {
       navigate("/matches");
     }
+  };
+
+  const handleTestMode = () => {
+    bypassAuth();
+    navigate("/matches");
   };
 
   const toggleShowPassword = () => {
@@ -106,6 +111,25 @@ const Login = () => {
                       Sign in
                     </>
                   )}
+                </Button>
+                
+                <div className="relative my-2">
+                  <div className="absolute inset-0 flex items-center">
+                    <span className="w-full border-t border-gray-300"></span>
+                  </div>
+                  <div className="relative flex justify-center text-xs uppercase">
+                    <span className="bg-card px-2 text-muted-foreground">Or</span>
+                  </div>
+                </div>
+                
+                <Button 
+                  type="button" 
+                  variant="outline" 
+                  className="w-full" 
+                  onClick={handleTestMode}
+                >
+                  <Beaker className="mr-2 h-4 w-4" />
+                  Enter Test Mode
                 </Button>
               </form>
             </CardContent>
