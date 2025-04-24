@@ -1,4 +1,3 @@
-
 import React, { useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
@@ -12,7 +11,7 @@ import { toast } from "@/components/ui/use-toast";
 import { supabase } from "@/lib/supabase";
 
 const Login = () => {
-  const { login, isLoading, bypassAuth } = useAuth();
+  const { login, isLoading: authLoading, bypassAuth } = useAuth();
   const navigate = useNavigate();
   
   const [email, setEmail] = useState("");
@@ -39,13 +38,13 @@ const Login = () => {
       const success = await login(email, password);
       if (success) {
         navigate("/matches");
-      } else {
-        // If login was not successful
-        setLoginLoading(false);
       }
+      // Always reset loading state regardless of success
+      setLoginLoading(false);
     } catch (error) {
       console.error("Login error:", error);
       setLoginLoading(false);
+      setFormError("Login failed. Please check your credentials and try again.");
     }
   };
 
@@ -82,14 +81,12 @@ const Login = () => {
           description: error.message,
           variant: "destructive",
         });
-        setIsResetting(false);
       } else {
         toast({
           title: "Password reset email sent",
           description: "Check your email for a password reset link",
         });
         setShowResetForm(false);
-        setIsResetting(false);
       }
     } catch (error) {
       console.error("Password reset error:", error);
@@ -98,6 +95,7 @@ const Login = () => {
         description: "An unexpected error occurred",
         variant: "destructive",
       });
+    } finally {
       setIsResetting(false);
     }
   };

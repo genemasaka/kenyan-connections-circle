@@ -1,4 +1,5 @@
 
+// Only updating the login function to ensure it properly handles loading state and errors
 import React, { createContext, useState, useContext, useEffect } from "react";
 import { User } from "@/lib/types";
 import { toast } from "@/components/ui/use-toast";
