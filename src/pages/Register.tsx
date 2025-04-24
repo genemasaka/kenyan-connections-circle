@@ -25,31 +25,37 @@ const Register = () => {
   const [confirmPassword, setConfirmPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [formError, setFormError] = useState("");
+  const [registerLoading, setRegisterLoading] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setFormError("");
+    setRegisterLoading(true);
 
     // Basic validation
     if (!name || !email || !age || !profession || !interests || !lookingFor || !password) {
       setFormError("Please fill in all fields");
+      setRegisterLoading(false);
       return;
     }
 
     if (password !== confirmPassword) {
       setFormError("Passwords do not match");
+      setRegisterLoading(false);
       return;
     }
 
     const ageNum = parseInt(age, 10);
     if (isNaN(ageNum) || ageNum < 18 || ageNum > 100) {
       setFormError("Please enter a valid age (18-100)");
+      setRegisterLoading(false);
       return;
     }
 
     const interestArray = interests.split(",").map(interest => interest.trim());
     if (interestArray.length < 1) {
       setFormError("Please enter at least one interest");
+      setRegisterLoading(false);
       return;
     }
 
@@ -66,9 +72,17 @@ const Register = () => {
       },
     };
 
-    const success = await register(userData, password);
-    if (success) {
-      navigate("/login");
+    try {
+      const success = await register(userData, password);
+      if (success) {
+        navigate("/login");
+      } else {
+        // If registration was not successful
+        setRegisterLoading(false);
+      }
+    } catch (error) {
+      console.error("Registration error:", error);
+      setRegisterLoading(false);
     }
   };
 
@@ -210,8 +224,8 @@ const Register = () => {
                   <div className="text-destructive text-sm">{formError}</div>
                 )}
 
-                <Button type="submit" className="w-full" disabled={isLoading}>
-                  {isLoading ? (
+                <Button type="submit" className="w-full" disabled={registerLoading}>
+                  {registerLoading ? (
                     "Creating account..."
                   ) : (
                     <>

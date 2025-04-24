@@ -22,19 +22,30 @@ const Login = () => {
   const [resetEmail, setResetEmail] = useState("");
   const [showResetForm, setShowResetForm] = useState(false);
   const [isResetting, setIsResetting] = useState(false);
+  const [loginLoading, setLoginLoading] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setFormError("");
+    setLoginLoading(true);
 
     if (!email || !password) {
       setFormError("Please enter both email and password");
+      setLoginLoading(false);
       return;
     }
 
-    const success = await login(email, password);
-    if (success) {
-      navigate("/matches");
+    try {
+      const success = await login(email, password);
+      if (success) {
+        navigate("/matches");
+      } else {
+        // If login was not successful
+        setLoginLoading(false);
+      }
+    } catch (error) {
+      console.error("Login error:", error);
+      setLoginLoading(false);
     }
   };
 
@@ -71,12 +82,14 @@ const Login = () => {
           description: error.message,
           variant: "destructive",
         });
+        setIsResetting(false);
       } else {
         toast({
           title: "Password reset email sent",
           description: "Check your email for a password reset link",
         });
         setShowResetForm(false);
+        setIsResetting(false);
       }
     } catch (error) {
       console.error("Password reset error:", error);
@@ -85,7 +98,6 @@ const Login = () => {
         description: "An unexpected error occurred",
         variant: "destructive",
       });
-    } finally {
       setIsResetting(false);
     }
   };
@@ -183,8 +195,8 @@ const Login = () => {
                   {formError && (
                     <div className="text-destructive text-sm">{formError}</div>
                   )}
-                  <Button type="submit" className="w-full" disabled={isLoading}>
-                    {isLoading ? (
+                  <Button type="submit" className="w-full" disabled={loginLoading}>
+                    {loginLoading ? (
                       "Signing in..."
                     ) : (
                       <>
