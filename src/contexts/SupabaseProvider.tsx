@@ -15,7 +15,8 @@ export const SupabaseProvider: React.FC<{ children: React.ReactNode }> = ({ chil
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    const getInitialSession = async () => {
+    // Initialize by getting the user's session
+    const initializeAuth = async () => {
       try {
         const { data, error } = await supabase.auth.getSession();
         if (error) throw error;
@@ -27,13 +28,13 @@ export const SupabaseProvider: React.FC<{ children: React.ReactNode }> = ({ chil
       }
     };
 
-    // Initialize by getting the user's session
-    getInitialSession();
+    initializeAuth();
 
     // Listen for auth changes
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       (_event, session) => {
         setSession(session);
+        // Do not set isLoading to false here as it creates race conditions
       }
     );
 
