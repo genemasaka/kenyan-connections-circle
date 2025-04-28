@@ -7,6 +7,7 @@ import { Label } from '@/components/ui/label';
 import { toast } from '@/components/ui/use-toast';
 import { supabase } from '@/lib/supabase';
 import { cn } from '@/lib/utils';
+import { useNavigate } from 'react-router-dom';
 
 interface EnhancedLoginFormProps {
   onForgotPassword: () => void;
@@ -18,6 +19,7 @@ const EnhancedLoginForm = ({ onForgotPassword, className }: EnhancedLoginFormPro
   const [password, setPassword] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
+  const navigate = useNavigate();
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -50,6 +52,7 @@ const EnhancedLoginForm = ({ onForgotPassword, className }: EnhancedLoginFormPro
           title: 'Login successful',
           description: 'Welcome back!',
         });
+        navigate('/matches');
       }
     } catch (error) {
       console.error('Login error:', error);

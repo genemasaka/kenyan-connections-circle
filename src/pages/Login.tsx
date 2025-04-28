@@ -1,15 +1,36 @@
 
-import React, { useState } from "react";
-import { Link } from "react-router-dom";
+import React, { useState, useEffect } from "react";
+import { Link, useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import AnimatedBackground from "@/components/common/AnimatedBackground";
 import AppLogo from "@/components/common/AppLogo";
 import { GlassCard } from "@/components/ui/glass-card";
 import EnhancedLoginForm from "@/components/auth/EnhancedLoginForm";
 import EnhancedResetPasswordForm from "@/components/auth/EnhancedResetPasswordForm";
+import { useAuth } from "@/contexts/AuthContext";
 
 const Login = () => {
   const [showResetForm, setShowResetForm] = useState(false);
+  const { isAuthenticated, isLoading } = useAuth();
+  const navigate = useNavigate();
+  
+  // Redirect to matches page if user is already authenticated
+  useEffect(() => {
+    if (isAuthenticated && !isLoading) {
+      navigate('/matches');
+    }
+  }, [isAuthenticated, isLoading, navigate]);
+  
+  // Show loading state while checking authentication
+  if (isLoading) {
+    return (
+      <AnimatedBackground variant="purple" showBokeh={true}>
+        <div className="flex items-center justify-center min-h-screen">
+          <div className="text-white text-lg">Loading...</div>
+        </div>
+      </AnimatedBackground>
+    );
+  }
 
   return (
     <AnimatedBackground variant="purple" showBokeh={true}>

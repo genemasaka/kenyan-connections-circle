@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useAuth } from "@/contexts/AuthContext";
+import { toast } from "@/components/ui/use-toast";
 
 interface LoginFormProps {
   onForgotPassword: () => void;
@@ -35,7 +36,10 @@ const LoginForm = ({ onForgotPassword }: LoginFormProps) => {
     try {
       const success = await login(email, password);
       if (success) {
+        // If login was successful, redirect to matches page
         navigate("/matches");
+      } else {
+        setFormError("Login failed. Please check your credentials and try again.");
       }
     } catch (error) {
       console.error("Login error:", error);
