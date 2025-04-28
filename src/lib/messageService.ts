@@ -1,4 +1,3 @@
-
 import { supabase } from '@/lib/supabase';
 import { Message, User } from '@/lib/types';
 
@@ -8,7 +7,7 @@ export interface MessageData {
   receiver_id: string;
   content: string;
   created_at?: string;
-  is_read?: boolean;
+  read?: boolean;
 }
 
 export interface ConversationSummary {
@@ -35,7 +34,7 @@ export const sendMessage = async (
         sender_id: senderId,
         receiver_id: receiverId,
         content,
-        is_read: false,
+        read: false,
       })
       .select()
       .single();
@@ -51,7 +50,7 @@ export const sendMessage = async (
       receiverId: data.receiver_id,
       content: data.content,
       timestamp: new Date(data.created_at).toISOString(),
-      read: data.is_read,
+      read: data.read,
     };
   } catch (error) {
     console.error('Error sending message:', error);
@@ -92,7 +91,7 @@ export const getConversation = async (
       receiverId: msg.receiver_id,
       content: msg.content,
       timestamp: new Date(msg.created_at).toISOString(),
-      read: msg.is_read,
+      read: msg.read,
     }));
   } catch (error) {
     console.error('Error fetching conversation:', error);
@@ -110,10 +109,10 @@ export const markMessagesAsRead = async (
   try {
     const { error } = await supabase
       .from('messages')
-      .update({ is_read: true })
+      .update({ read: true })
       .eq('sender_id', senderId)
       .eq('receiver_id', receiverId)
-      .eq('is_read', false);
+      .eq('read', false);
 
     if (error) {
       console.error('Error marking messages as read:', error);
@@ -199,7 +198,7 @@ export const getConversationList = async (
 
       // Count unread messages from partner to user
       const unreadCount = conversationMessages.filter(
-        (msg) => msg.sender_id === partnerId && msg.receiver_id === userId && !msg.is_read
+        (msg) => msg.sender_id === partnerId && msg.receiver_id === userId && !msg.read
       ).length;
 
       const partnerDetails = userMap.get(partnerId) || {
@@ -236,7 +235,7 @@ export const getUnreadMessageCount = async (userId: string): Promise<number> => 
       .from('messages')
       .select('*', { count: 'exact', head: true })
       .eq('receiver_id', userId)
-      .eq('is_read', false);
+      .eq('read', false);
 
     if (error) {
       console.error('Error counting unread messages:', error);
@@ -297,7 +296,7 @@ export const subscribeToMessages = (
           receiverId: newMessage.receiver_id,
           content: newMessage.content,
           timestamp: new Date(newMessage.created_at || Date.now()).toISOString(),
-          read: newMessage.is_read || false,
+          read: newMessage.read || false,
         });
       }
     )
